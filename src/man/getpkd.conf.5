@@ -1,0 +1,73 @@
+.Dd $Mdocdate$
+.Dt getpkd.conf 5
+.Os 
+.Sh NAME
+.Nm getpkd.conf
+.Nd getpk daemon configuration file
+.Sh SYNOPSIS
+.Nm /etc/getpkd.conf
+.Sh DESCRIPTION
+.Pp
+The getpkd(8) daemon reads its configuration from the file 
+.Ar /etc/getpkd.conf
+(or the file specified on the command line with the -f option).
+Lines starting with `#' are treated as comments.  Empty lines are
+ignored.
+.Pp
+The file contains key/value pairs separated by `='.  Keywords are
+case-insensitive, values are case-sensitive.  Values should not be
+quoted.
+.Bl -tag -width Ds
+.It Cm CA_CERTPATH
+Absolute path to the CA certificate used for TLS connections.
+.It Cm IDLE_TIMEOUT
+The maximum number of seconds after which an idle TCP connection to the
+LDAP is terminated.  If 0, each new query initiates a new TCP connection
+to the LDAP server, and the connection is closed after the LDAP search
+completes.  If greater than 0, the TCP connection is not closed and will
+be reused for additional queries until the connection is idle for the
+length of this value.  The default value is 20 seconds. 
+.Pp
+If the LDAP server has a similar option, it is recommended that this
+value be less than the server's value.
+.It Cm IGNORE
+An unquoted, comma separated list of usernames which will be ignored.  No LDAP
+queries will be sent for usernames found in this list.
+.It Cm LDAP_SEARCHBASE
+Required. A string containing the base DN used for all LDAP search operations.
+.It Cm NETWORK_TIMEOUT
+Maximum number of seconds for a TCP handshake to complete before the
+LDAP server will be designated as offline.  The default is 10 seconds.
+.It Cm SCOPE
+Scope of the LDAP search operation.  Possible values are either
+ONELEVEL, SUBTREE, or CHILDREN. The default is ONELEVEL. 
+.It Cm SEARCH_TIMELIMIT
+Maximum number of seconds for the LDAP search to complete before the
+server will be designated as offline.  The default is 10 seconds. 
+.It Cm URI
+Required.  A whitespace separated list of LDAP URIs in the form of
+ldap://host1 ldap://host2, etc. Only port 389 is supported at this time.
+(`ldaps://' is considered deprecated by OpenLDAP and is not supported by
+getpkd(8))
+.Pp
+.Pp
+The getpkd(8) daemon maintains state information on the availability of
+the LDAP servers it has been configured to query.  If an LDAP server
+goes offline, the daemon will redirect queries to the next server known
+to be available.  Servers which are offline are periodically tested for
+their status, and if found to be back online they will be returned to
+the pool of available servers.
+.It Cm USE_TLS
+If ``yes'', all connections to the LDAP server are encrypted using
+TLS.  Using TLS requires a value for the 
+.Cm CA_CERTPATH
+keyword.  If ``no'', connections are not encrypted.  The default is
+``no''. 
+.Sh NOTES
+The getpkd(8) daemon will re-read
+.Nm
+when it receives a SIGHUP signal.
+.Pp
+.Sh SEE ALSO
+.Xr getpk 8
+.Xr getpkd 8

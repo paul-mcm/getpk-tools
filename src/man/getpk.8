@@ -1,0 +1,31 @@
+.Dd $Mdocdate$
+.Dt getpk 8
+.Os 
+.Sh NAME
+.Nm getpk
+.Nd Query the getpkd(8) daemon for a user's public key(s)
+.Sh SYNOPSIS
+.Nm getpk
+.Ar username
+.Sh DESCRIPTION
+.Pp
+The
+.Nm 
+utility queries the getpkd(8) daemon for a user's public key(s) stored
+in an LDAP directory and writes the results to STDOUT.  Results consist
+of zero or more lines of authorized_keys output (see AUTHORIZED_KEYS in
+sshd(8)).
+.Pp
+No output is generated if no public key is found. All errors are sent to syslogd(8). 
+.Pp
+.Nm
+was written specifically for sshd(8) when configured to use the
+AuthorizedKeysCommand (see sshd_config(5)).  It may be also be used by
+any other program that needs to query an LDAP server for users' public keys.
+.Sh RETURN VALUES
+.Nm
+returns 0 on success and -1 on error.
+.Sh SEE ALSO
+.Xr getpkd 8
+.Xr sshd_config 5
+.Xr ldap 3

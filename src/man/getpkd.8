@@ -1,0 +1,57 @@
+.Dd $Mdocdate$
+.Dt getpkd 8
+.Os 
+.Sh NAME
+.Nm getpkd
+.Nd Serve client requests for a user's public key(s) kept in an LDAP
+directory
+.Sh SYNOPSIS
+.Nm getpkd 
+.Op Fl d
+.Op Fl f Ar config_file
+.Sh DESCRIPTION
+.Pp
+.Nm
+is a server daemon that handles client requests for users' public keys
+stored in an LDAP directory.  A client request consists of a single
+username, and the server reply is zero or more lines of authorized_keys
+output (see AUTHORIZED_KEYS in sshd(8)).
+.Pp
+.Nm
+listens on a local, unix socket for client connections.  The companion
+program getpk(8) is a command line tool available to send client
+requests to
+.Nm .
+.Pp
+Configuration uses the file /etc/getpkd.conf.  See getpkd.conf(5) for
+the available settings. 
+.Pp
+Arguments to
+.Nm
+are:
+.Bl -tag -width Ds
+.It Fl d
+Debug mode.
+.Nm
+will not detach from the controlling terminal and print error messages
+to terminal.  If compiled with DEBUG flag set, addtional debugging
+messages printed to terminal.
+.It Fl f Ar config_file
+Name of configuration file.  The default is
+.Pa /etc/getpkd.conf .
+.Sh NOTES
+The getpkd(8) daemon will re-read its configuration file when it
+receives a SIGHUP signal.
+.Sh IMPLEMENTATION NOTES
+.Nm
+depends on libldap (and related libraries) provided by OpenLDAP
+(http://www.openldap.org).
+.Sh FILES
+.Bl -tag -width Ds -compact
+.It Pa /etc/getpkd.conf
+.It Pa /tmp/getpkd/getpkd.sock
+.Sh SEE ALSO
+.Xr getpkd.conf 5
+.Xr getpk 8
+.Xr sshd_config 5
+.Xr ldap 3
