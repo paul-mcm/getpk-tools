@@ -2,7 +2,7 @@
 
 char sock_path[] = "/tmp/getpkd/getpkd.sock";
 char sock_dir[] = "/tmp/getpkd";
-char *attrs[] = { "sshPublicKey", '\0' };
+char *attrs[] = { "authkey", '\0' };
 
 int main(int argc, char *argv[])
 {
