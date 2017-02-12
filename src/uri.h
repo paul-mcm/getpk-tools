@@ -12,7 +12,7 @@
 
 #include "errorlog.h"
 
-#define URI_MAX MAXHOSTNAMELEN + 7
+#define URI_MAX (MAXHOSTNAMELEN + 7)
 
 pthread_rwlock_t urilist_lock;
 int urilist_len;
@@ -45,5 +45,6 @@ int	uri_cnt(void);
 int	uri_list_offline(char **);
 void	uri_tailq_free(void);
 int	uri_build_string(char *);
+int	uri_listlen();
 
 #endif

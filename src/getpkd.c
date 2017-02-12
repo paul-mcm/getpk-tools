@@ -562,7 +562,7 @@ void * sighup_thrd(void *tid)
 
 void configure(struct configuration *c)
 {
-	int msize;
+	int list_len;
 
 	pthread_rwlock_wrlock(&urilist_lock);
 	set_cfg_defaults(c);
@@ -575,18 +575,10 @@ void configure(struct configuration *c)
 	    log_die("Error building URI list");
 
 	c->n_uris = uri_cnt();
+	c->uri_strlen = uri_listlen();
 
-	/*
-	 * malloc enough mem for string of uris plus white
-	 * space between each uri.
-	 */
-	msize = (URI_MAX) * (c->n_uris) + c->n_uris - 1;
-
-	if ((c->uri_string = malloc(msize)) == NULL)
-	    log_syserr("Malloc failure", errno);
-
-	memset(c->uri_string, 0, msize);
-	
+	if (uristr_calloc(c->uri_string, c->uri_strlen) == -1)
+	    log_die("Failed to alloc for URI string");
 
 	if (do_set_ldap_opts(c) != 0)
 	    log_die("Failed to set LDAP options");
@@ -643,26 +635,34 @@ int load_config(struct configuration *c)
 	return 0;
 }
 
+/* Reinitializes a thread's local LDAP handle */
+
 int reinit(struct configuration *c, LDAP **l)
 {	
 	int r;
+	char *u_list;
+	log_msg("REINITINT");
 
-	char uri_list[(URI_MAX * c->n_uris) + c->n_uris]; 
+	if  (uristr_calloc(u_list, c->uri_strlen) == -1)
+	    log_die("Failed to alloc for URI string");
 
 	pthread_rwlock_rdlock(&urilist_lock);
-	r = uri_build_string(uri_list);
+	r = uri_build_string(u_list);
 	pthread_rwlock_unlock(&urilist_lock);
 
 	if (r < 0) {
 	    log_msg("Reinit failed: All servers offline");
+	    free(u_list);
 	    return -1;
 	}
 
-	if (init_ldap_handle(l, c, uri_list) < 0) {
+	if (init_ldap_handle(l, c, u_list) < 0) {
 	    log_msg("Failed to reinit LDAP handle");
+	    free(u_list);
 	    return -1;
 	}
 
+	free(u_list);
 	return 0;
 }
 
@@ -842,7 +842,7 @@ int call_accept(int lfd)
 		log_ret("accept() error: %s", strerror(errno));
 		return -1;
 	    } else {
-		log_ret("accept() error: %s", strerror(errno));
+		log_sysret("accept() error: %s", strerror(errno));
 		return -1;
 	    }
 
@@ -944,4 +944,13 @@ int initialize(LDAP **l, struct configuration *c)
 	    }	  
 	}
 	return(0);
+}
+
+int uristr_calloc(char *s, int n)
+{
+	if ((s = calloc(n, sizeof(char))) == NULL) {
+	    log_ret("Calloc error", errno);
+	    return -1;
+	} else
+	    return 0;
 }

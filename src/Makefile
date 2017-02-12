@@ -2,7 +2,7 @@ CC = gcc
 OS := $(shell uname)
 SERVER := getpkd
 CLIENT := getpk
-#DEBUGFLAGS = -D DEBUG -g
+DEBUGFLAGS = -D DEBUG -g
 
 ifeq ($(OS), OpenBSD)
 	libs = /usr/local/lib

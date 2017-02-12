@@ -196,6 +196,7 @@ void show_config(struct configuration *c)
         log_msg("ldap_search_base:\t%s", c->ldap_search_base);
 	log_msg("scope:\t\t\t%d", c->scope);
         log_msg("uri_string:\t\t%s", c->uri_string);
+	log_msg("uri_strlen:\t\t%d", c->uri_strlen);
         log_msg("ignores:\t\t%s", c->ignores);
         log_msg("ignore_size:\t\t%d", (int)c->ignore_size);
 

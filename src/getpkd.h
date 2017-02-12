@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include "ldap_call.h"
+#include "uri.h"
 
 /* RFC1274: MAX USERID LENGTH for LDAP schema attr type 0.9.2342.19200300.100.1.1 */
 #define UNAME_MAX 256
@@ -122,4 +123,6 @@ void	configure(struct configuration *);
 int	do_search_failure(struct thread_args *);
 int	do_result_failure(struct thread_args *);
 int	intitializ(LDAP *, struct configuration *);
+int	uristr_calloc(char *, int);
+
 #endif

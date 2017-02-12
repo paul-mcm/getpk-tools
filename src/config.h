@@ -19,6 +19,7 @@ struct configuration {
 	int 		(*init_f)(LDAP **, char *);
 	void		*(*srvr_thrdf)(void *);
         char 		*uri_string;
+	int		uri_strlen;
         struct uri_list *uris;
 	int		n_uris;
         char 		*ignores;

@@ -69,6 +69,21 @@ void uri_iterate_list(void)
 
 }
 
+int uri_listlen(void)
+{
+	int l;
+        struct uri *u;
+
+	TAILQ_FOREACH(u, &uris_head, uris) {
+#ifdef DEBUG
+	    log_msg("URI: %s STATUS: %d", u->uri, u->status);
+#endif
+	    l += strlen(u->uri);
+	}
+
+	return l + uri_cnt();
+}
+
 int uri_status(char *h)
 {
 	char uri_prefix[URI_MAX + 1] = "ldap://";
