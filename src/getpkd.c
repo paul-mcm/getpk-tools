@@ -842,7 +842,7 @@ int call_accept(int lfd)
 		log_ret("accept() error: %s", strerror(errno));
 		return -1;
 	    } else {
-		log_sysret("accept() error: %s", strerror(errno));
+		log_syserr("fatal accept() error: %s", strerror(errno));
 		return -1;
 	    }
 
