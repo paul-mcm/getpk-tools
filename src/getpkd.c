@@ -351,15 +351,15 @@ void * accept_thread(void *cfg)
 
 	    if (pthread_create(&thread_id, &dflt_attrs, &query_thread, \
 		(void *) t_args) != 0) {
-		    log_ret("Failed to create thread to handle request:", errno);
-		    ldap_destroy(t_args->ldap);
-		    if (c->idle_timeout != 0) {
-			pthread_mutex_lock(&ldap_lock);
-			ldap_destroy(ldap);
-			ldap = NULL;
-			pthread_mutex_unlock(&ldap_lock);
-		    }
-		    goto do_cleanup;
+		log_ret("Failed to create thread to handle request:", errno);
+		ldap_destroy(t_args->ldap);
+
+		if (c->idle_timeout == 0) {
+		    ldap_destroy(ldap);
+		    ldap = NULL;
+		}
+		goto do_cleanup;
+
 	    } else {
 		if (c->idle_timeout == 0) {
 		    ldap_destroy(ldap);
