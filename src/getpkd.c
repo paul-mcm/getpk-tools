@@ -641,7 +641,6 @@ int reinit(struct configuration *c, LDAP **l)
 {	
 	int r;
 	char *u_list;
-	log_msg("REINITINT");
 
 	if  (uristr_calloc(u_list, c->uri_strlen) == -1)
 	    log_die("Failed to alloc for URI string");
@@ -655,6 +654,10 @@ int reinit(struct configuration *c, LDAP **l)
 	    free(u_list);
 	    return -1;
 	}
+
+#ifdef DEBUG
+	log_msg("REINIT: URI STR: %s", u_list);
+#endif
 
 	if (init_ldap_handle(l, c, u_list) < 0) {
 	    log_msg("Failed to reinit LDAP handle");
