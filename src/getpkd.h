@@ -41,8 +41,7 @@ pthread_t recthread_id;
 int debug;
 
 /* thread_args is ARG STRUCT THAT IS CAST TO void * WHEN PASSED TO EACH 
-*  NEW THREAD.  THE FIRST THREE MEMBERS ARE ONLY USED WHEN MULTIPLE 
-*  QUERIES SHARE AN ALREADY EXISTING NETWORK CONNECTION TO SERVER.
+*  NEW THREAD.
 *
 *       ldap            -       LDAP SESSION HANDLE
 *       timeout         -       IDLE CONNECTION TIMEOUT

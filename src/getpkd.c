@@ -383,8 +383,8 @@ void * query_thread(void *a)
 {
 	LDAPMessage		*msg;
 	struct thread_args	*args;
-        char			uid[UNAME_MAX];
-	char			fltr[UNAME_MAX + 4] = "uid=";
+        char			uid[UNAME_MAX + 1];
+	char			fltr[UNAME_MAX + 5] = "uid=";
 	char			*key = uid;
 	ssize_t			nread;
 	int			msgid, r;
@@ -398,11 +398,10 @@ void * query_thread(void *a)
 	    log_ret("Error reading from socket:", errno);
 	    pthread_exit(NULL);
 	}
-
 	uid[nread + 1] = '\0';
 
 #ifdef BSD
-	strlcat(fltr, uid, sizeof(uid));
+	strlcat(fltr, uid, sizeof(fltr));
 #elif LINUX
 	strncat(fltr, uid, UNAME_MAX); 
 #endif
