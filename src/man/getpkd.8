@@ -18,9 +18,9 @@ username, and the server reply is zero or more lines of authorized_keys
 output (see AUTHORIZED_KEYS in sshd(8)).
 .Pp
 .Nm
-listens on a local, unix socket for client connections.  The companion
-program getpk(8) is a command line tool available to send client
-requests to
+listens for client connections on the local, unix domain socket at
+/tmp/getpkd/getpkd.sock.  The companion program getpk(8) is a command
+line tool available to send client requests to
 .Nm .
 .Pp
 Configuration uses the file /etc/getpkd.conf.  See getpkd.conf(5) for
