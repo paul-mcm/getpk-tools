@@ -220,7 +220,7 @@ void set_cfg_defaults(struct configuration *c)
 	c->srch_timelimit = 10;
 	c->idle_timeout = 20;
 	c->sync_timeout = 10;  /* USER CAN'T SET THIS */
-	c->use_tls = TLS_FALSE;
+	c->use_tls = TLS_TRUE;
 	c->scope = LDAP_SCOPE_ONELEVEL;
 }	
 
@@ -231,10 +231,11 @@ int validate_config(struct configuration *c)
 
 	if (c->use_tls == TLS_TRUE) {
 	    if (strlen(c->ca_certpath) == 0)
-		log_die("Path to CA Cert not defined");
+		log_die("Configuration Error: CA_CERTPATH not defined");
 
-	    stat(c->ca_certpath, &sb) == -1)
-		log_syserr("Failed to stat CA certfile %s", c->ca_certpath, errno);
+	    if (stat(c->ca_certpath, &sb) == -1)
+		log_syserr("Configuration Error: Failed to stat CA certfile %s", \
+		    c->ca_certpath, errno);
 
 	    if ((fd = open(c->ca_certpath, O_RDONLY)) == -1)
 		log_syserr("Can't read CA cert file %s", c->ca_certpath, errno);
@@ -243,12 +244,12 @@ int validate_config(struct configuration *c)
 	}
 	
 	if (c->ldap_search_base == NULL) {
-	    log_msg("LDAP search base missing");
+	    log_msg("Configuration Error: No value for LDAP_SEARCHBASE");
 	    return(-1);
 	}
 
 	if (c->uri_string == NULL) {
-	    log_msg("no LDAP servers given");
+	    log_msg("Configuration Error: no LDAP servers given");
 	    return(-1);
 	}
 	return 0;

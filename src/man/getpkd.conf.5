@@ -20,6 +20,9 @@ quoted.
 .Bl -tag -width Ds
 .It Cm CA_CERTPATH
 Absolute path to the CA certificate used for TLS connections.
+Required if
+.Cm USE_TLS
+is set to ``yes'' (the default).
 .It Cm IDLE_TIMEOUT
 The maximum number of seconds after which an idle TCP connection to
 the LDAP server is terminated.  If 0, each new query initiates a new
@@ -62,7 +65,7 @@ If ``yes'', all connections to the LDAP server are encrypted using
 TLS.  Using TLS requires a value for the 
 .Cm CA_CERTPATH
 keyword.  If ``no'', connections are not encrypted.  The default is
-``no''. 
+``yes''.
 .Sh NOTES
 The getpkd(8) daemon will re-read
 .Nm
