@@ -229,17 +229,19 @@ int validate_config(struct configuration *c)
 	struct stat sb;	
 	int fd;
 
-	if (c->use_tls == TLS_TRUE && strlen(c->ca_certpath) == 0)
-	    log_die("Path to CA Cert not defined");
+	if (c->use_tls == TLS_TRUE) {
+	    if (strlen(c->ca_certpath) == 0)
+		log_die("Path to CA Cert not defined");
 
-	if (c->use_tls == TLS_TRUE && stat(c->ca_certpath, &sb) == -1)
-	    log_syserr("Failed to stat CA certfile %s", c->ca_certpath, errno);
+	    stat(c->ca_certpath, &sb) == -1)
+		log_syserr("Failed to stat CA certfile %s", c->ca_certpath, errno);
 
-	if ((fd = open(c->ca_certpath, O_RDONLY)) == -1)
-	    log_syserr("Can't read CA cert file %s", c->ca_certpath, errno);
-	else
-	    close(fd);
-
+	    if ((fd = open(c->ca_certpath, O_RDONLY)) == -1)
+		log_syserr("Can't read CA cert file %s", c->ca_certpath, errno);
+	    else
+		close(fd);
+	}
+	
 	if (c->ldap_search_base == NULL) {
 	    log_msg("LDAP search base missing");
 	    return(-1);
