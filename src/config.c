@@ -1,4 +1,6 @@
 #include "config.h"
+#include <sys/stat.h>
+#include <fcntl.h>
 
 int build_config(struct configuration *c)
 {
@@ -224,10 +226,19 @@ void set_cfg_defaults(struct configuration *c)
 
 int validate_config(struct configuration *c)
 {
-	if (c->use_tls == TLS_TRUE && strlen(c->ca_certpath) == 0) {
-	    log_msg("Path to CA Cert not defined");
-	    return(-1);
-	}
+	struct stat sb;	
+	int fd;
+
+	if (c->use_tls == TLS_TRUE && strlen(c->ca_certpath) == 0)
+	    log_die("Path to CA Cert not defined");
+
+	if (c->use_tls == TLS_TRUE && stat(c->ca_certpath, &sb) == -1)
+	    log_syserr("Failed to stat CA certfile %s", c->ca_certpath, errno);
+
+	if ((fd = open(c->ca_certpath, O_RDONLY)) == -1)
+	    log_syserr("Can't read CA cert file %s", c->ca_certpath, errno);
+	else
+	    close(fd);
 
 	if (c->ldap_search_base == NULL) {
 	    log_msg("LDAP search base missing");
