@@ -44,7 +44,7 @@ int	uri_down_cnt(void);
 int	uri_cnt(void);
 int	uri_list_offline(char **);
 void	uri_tailq_free(void);
-int	uri_build_string(char *);
+int	uri_build_string(char *, int);
 int	uri_listlen();
 
 #endif

@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 	struct rlimit 		rlim_ptr;
 	int 			fd, i, c, r;
 	mode_t			old_umask;
-	char			config_file[PATH_MAX + 1] = "/etc/getpkd.conf\0";
+	char			config_file[PATH_MAX + 1] = "/etc/getpkd.conf";
 
 	debug = 0;
 
@@ -285,7 +285,7 @@ void * accept_thread(void *cfg)
 
 	    if (reinit_status == NEED_REINIT) {
 		pthread_rwlock_wrlock(&urilist_lock);
-		r = uri_build_string(c->uri_string);
+		r = uri_build_string(c->uri_string, c->uri_strlen);
 		pthread_rwlock_unlock(&urilist_lock);
 		if (r < 1) {
 		    log_msg("Reinit ldap handle failed: All servers offline");
@@ -395,7 +395,6 @@ void * query_thread(void *a)
 	    pthread_exit(NULL);
 	}
 	uid[nread + 1] = '\0';
-
 #ifdef BSD
 	strlcat(fltr, uid, sizeof(fltr));
 #elif LINUX
@@ -570,7 +569,7 @@ void configure(struct configuration *c)
 	    log_die("Error building URI list");
 
 	c->n_uris = uri_cnt();
-	c->uri_strlen = uri_listlen();
+	c->uri_strlen = uri_listlen();	/* includes space for NULL terminator */
 
 	if ((c->uri_string = calloc(c->uri_strlen, sizeof(char))) == NULL)
 	    log_syserr("Calloc error", errno);
@@ -641,7 +640,7 @@ int reinit(struct configuration *c, LDAP **l)
 	    log_syserr("Calloc error reiniting LDAP handle", errno);
 
 	pthread_rwlock_rdlock(&urilist_lock);
-	r = uri_build_string(u_list);
+	r = uri_build_string(u_list, c->uri_strlen);
 	pthread_rwlock_unlock(&urilist_lock);
 
 	if (r < 0) {
@@ -919,7 +918,7 @@ int initialize(LDAP **l, struct configuration *c)
 		    set_rec_status(recthread_id);
 
 		    pthread_rwlock_wrlock(&urilist_lock);
-		    r = uri_build_string(c->uri_string);
+		    r = uri_build_string(c->uri_string, c->uri_strlen);
 		    pthread_rwlock_unlock(&urilist_lock);
 
 		    if (r < 1)
