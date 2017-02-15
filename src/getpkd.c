@@ -572,10 +572,8 @@ void configure(struct configuration *c)
 	c->n_uris = uri_cnt();
 	c->uri_strlen = uri_listlen();
 
-	if ((c->uri_string = calloc(c->uri_strlen, sizeof(char))) == NULL) {
-	    log_ret("Calloc error", errno);
-	    return -1;
-	}
+	if ((c->uri_string = calloc(c->uri_strlen, sizeof(char))) == NULL)
+	    log_syserr("Calloc error", errno);
 
 	if (do_set_ldap_opts(c) != 0)
 	    log_die("Failed to set LDAP options");
@@ -639,10 +637,8 @@ int reinit(struct configuration *c, LDAP **l)
 	int r;
 	char *u_list;
 
-	if ((u_list = calloc(c->uri_strlen, sizeof(char))) == NULL) {
-	    log_ret("Calloc error", errno);
-	    return -1;
-	}
+	if ((u_list = calloc(c->uri_strlen, sizeof(char))) == NULL)
+	    log_syserr("Calloc error reiniting LDAP handle", errno);
 
 	pthread_rwlock_rdlock(&urilist_lock);
 	r = uri_build_string(u_list);
