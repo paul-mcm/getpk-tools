@@ -130,10 +130,6 @@ int server(int fd, char *cfg_file)
 
 	memset(&config, 0, sizeof(struct configuration));
 
-#ifdef OPENBSD
-	if (pledge("stdio rpath inet cpath", NULL) == -1)
-	    log_syserr("pledge failure %s", strerror(errno));
-#endif
         if ((r = pthread_attr_init(&dflt_attrs)) != 0)
 	    log_die("Error initing thread attrs: %d\n", r);
 
@@ -813,7 +809,7 @@ void drop_privileges()
 	    log_syserr("cannot drop privileges");
 
 #ifdef OPENBSD
-	if (pledge("stdio rpath inet unix cpath fattr", NULL) == -1)
+	if (pledge("stdio rpath inet unix cpath fattr dns", NULL) == -1)
 	    log_syserr("pledge failure %s", strerror(errno));
 #endif
 }
