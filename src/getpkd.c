@@ -463,10 +463,10 @@ void *uri_recovery_thrd(void *cfg)
 	sigset_t		sig_set;
 	int			msgid, sig, status, r;
 	int			cnt, i;
+	struct uri		*u;
 
 	sigemptyset(&sig_set);
 	sigaddset(&sig_set, SIGUSR1);
-	struct uri		*u;
 
 	t_data.offline_hosts = calloc(c->n_uris, sizeof(char *));
 	pthread_cleanup_push(free_rec_thrd_data, (void *)&t_data);
@@ -572,8 +572,10 @@ void configure(struct configuration *c)
 	c->n_uris = uri_cnt();
 	c->uri_strlen = uri_listlen();
 
-	if (uristr_calloc(c->uri_string, c->uri_strlen) == -1)
-	    log_die("Failed to alloc for URI string");
+	if ((c->uri_string = calloc(c->uri_strlen, sizeof(char))) == NULL) {
+	    log_ret("Calloc error", errno);
+	    return -1;
+	}
 
 	if (do_set_ldap_opts(c) != 0)
 	    log_die("Failed to set LDAP options");
@@ -637,8 +639,10 @@ int reinit(struct configuration *c, LDAP **l)
 	int r;
 	char *u_list;
 
-	if  (uristr_calloc(u_list, c->uri_strlen) == -1)
-	    log_die("Failed to alloc for URI string");
+	if ((u_list = calloc(c->uri_strlen, sizeof(char))) == NULL) {
+	    log_ret("Calloc error", errno);
+	    return -1;
+	}
 
 	pthread_rwlock_rdlock(&urilist_lock);
 	r = uri_build_string(u_list);
@@ -659,7 +663,6 @@ int reinit(struct configuration *c, LDAP **l)
 	    free(u_list);
 	    return -1;
 	}
-
 	free(u_list);
 	return 0;
 }
@@ -942,13 +945,4 @@ int initialize(LDAP **l, struct configuration *c)
 	    }	  
 	}
 	return(0);
-}
-
-int uristr_calloc(char *s, int n)
-{
-	if ((s = calloc(n, sizeof(char))) == NULL) {
-	    log_ret("Calloc error", errno);
-	    return -1;
-	} else
-	    return 0;
 }
