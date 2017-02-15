@@ -394,11 +394,11 @@ void * query_thread(void *a)
 	    log_ret("Error reading from socket:", errno);
 	    pthread_exit(NULL);
 	}
-	uid[nread + 1] = '\0';
+	uid[nread] = '\0';
 #ifdef BSD
 	strlcat(fltr, uid, sizeof(fltr));
 #elif LINUX
-	strncat(fltr, uid, UNAME_MAX); 
+	strncat(fltr, uid, sizeof(fltr) - 1 - strlen(fltr));
 #endif
 	if (bsearch(&key, args->cfg->ignore_list, args->cfg->ignore_size, \
 	    sizeof(char *), comp_string) != NULL) {
