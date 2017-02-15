@@ -1,28 +1,28 @@
-AttributeType ( 1.3.6.1.4.1.49105.500.1.1.1.4
+AttributeType ( 1.3.6.1.4.1.49105.500.1.1.1
     NAME ('authkey' 'authorizedkey')
     DESC 'Authorized Key in the format described in the OpenSSH sshd(8) manpage)'
     EQUALITY caseExactMatch
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
-AttributeType ( 1.3.6.1.4.1.49105.500.1.1.1.2
+AttributeType ( 1.3.6.1.4.1.49105.500.1.1.2
     NAME 'fingerprint'
     DESC 'Key Fingerprint'
     EQUALITY caseExactMatch
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
-AttributeType ( 1.3.6.1.4.1.49105.500.1.1.1.3
+AttributeType ( 1.3.6.1.4.1.49105.500.1.1.3
     NAME 'keytype'
     DESC 'Key Type(e.g., ecdsa-sha2-nistp256, ecdsa-sha2-nistp384, ecdsa-sha2-nistp521, ssh-ed25519, ssh-dss or ssh-rsa)'
     EQUALITY caseExactMatch
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
-AttributeType ( 1.3.6.1.4.1.49105.500.1.1.1.5
+AttributeType ( 1.3.6.1.4.1.49105.500.1.1.4
     NAME 'keylen'
     DESC 'Number of bits in key'
     EQUALITY IntegerMatch
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
 
-ObjectClass ( 1.3.6.1.4.1.49105.500.1.1.1.0
+ObjectClass ( 1.3.6.1.4.1.49105.500.1.1.0
     NAME 'sshPublicKey'
     DESC 'SSH Public Key for Public Key Authentication'
     SUP top AUXILIARY
