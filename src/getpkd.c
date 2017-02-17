@@ -14,8 +14,6 @@ int main(int argc, char *argv[])
 
 	debug = 0;
 
-	log_open(argv[0], LOG_PID, LOG_DAEMON);
-
 	if (argc > 1) {
 	    while ((c = getopt (argc, argv, "df:")) != -1)  {   
 		switch (c) {
@@ -38,6 +36,8 @@ int main(int argc, char *argv[])
 		}
 	    }
 	}
+
+	log_open(argv[0], LOG_PID, LOG_DAEMON);
 
         if (getrlimit(RLIMIT_NOFILE, &rlim_ptr) < 0)
 	    log_syserr("rlimit failed %d", errno);
