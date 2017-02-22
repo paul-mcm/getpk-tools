@@ -8,7 +8,7 @@ V.	SSHD CONFIGURATION
 VI.	LDAP CONFIGURATION
 VII.	THE sshPublicKey OBJECT CLASS
 VIII.	ADDITIONAL NOTES
-IX.	LICENSE
+
 
 I. INTRO
 ---------
@@ -153,17 +153,18 @@ and as a privileged user
 
 (on BSDs, use gmake);
 
-If all goes well, the result will be 2 new binaries.  On BSDs these are:
+If all goes well, the result will be 2 new binaries.  On Centos/BSDs
+these are:
 
     /usr/local/sbin/getpk	
     /usr/local/sbin/getpkd
 
-on Linux:
+on Debian:
     /opt/getpktools/getpk
     /opt/getpktools/getpkd
 
 (Section VIII of this document describes the rationale for the install
-location on Linux systems.)
+location on Debian systems.) 
 
 A config file is automatically installed as:
     /etc/getpkd.conf
@@ -173,7 +174,7 @@ These manpages are placed under /usr/local/
     getpkd(8)
     getpkd.conf(5)
 
-See the getpkd.conf(5) man page for details on configuring getpkd(8).
+See the getpkd.conf(5) man page for details on configuring getpkd(8). 
 
 
 V. SSHD CONFIGURATION
@@ -187,11 +188,11 @@ For BSDs systems, add these settings to sshd_config:
      AuthorizedKeysCommand	/usr/local/sbin/getpk
      AuthorizedKeysUser		getpk
 
-On Linux, the value for AuthorizedKeysCommand should be set to
+On Debian, the value for AuthorizedKeysCommand should be set to
 /opt/getpktools/getpk.
 
 Also, confirm that sshd(8) is configured to use public key
-authentication (it's turned on by default) and then restart sshd(8).
+authentication (it's turned on by default) and then restart sshd(8). 
 
 
 VI. LDAP CONFIGURATION
@@ -206,14 +207,14 @@ defines the sshPublicKey object class with the authkey attribute.  The
 authkey attribute may hold multiple keys. 
 
 The format of the key should conform to the authorized_keys format as
-described in the manpage for sshd(8).
+described in the manpage for sshd(8). 
 
 To use the sshPublicKey object class with OpenLDAP's slapd server,
 copy the file sshPublicKey.schema to OpenLDAP's schema directory and
 configure slapd to include the new object class (see slapd.conf(5)). 
 
 See the next section for more information on the sshPublicKey object
-class.
+class. 
 
 
 VII. THE sshPublicKey OBJECT CLASS
@@ -244,28 +245,26 @@ key authentication.
 
 VIII. ADDITIONAL NOTES
 -------------------------
-getpkd(8) uses pthreads(3).  
+1. getpkd(8) uses pthreads(3).
 
-On OpenBSD, the getpk tools use pledge(2) to restrict their operations.
-Therefore, they will not compile on OpenBSD releases prior to 5.9.
+2. On OpenBSD, the getpk tools use pledge(2) to restrict their
+operations.  Therefore, they will not compile on OpenBSD releases
+prior to 5.9. 
 
-sshd(8) requires that the program specified by the
+3. sshd(8) requires that the program specified by the
 'AuthorizedKeysCommand' be in a directory owned by root with a group
-owner id of `0' (typically 'root' or 'wheel').  On Centos 7.1, the
-default settings for /usr/local/sbin are compatible with this
-requirement.  However, Debian Linux sets group ownership of this dir
-to 'staff' (gid 50). 
+owner id of `0' (typically 'root' or 'wheel').
 
-In order to keep the Makefile simple and to install the binaries in a
-working directory location for both Debian/Centos Linux systems (without
-resorting to autotools for configuration), the Makefile installs the
-getpk tools in /opt/getpktools on all Linux systems.  This seems a
-sub-optimal solution given the description for /opt in the hier(7)
-manpage.
+Debian Linux sets group ownership of this directory to 'staff' (gid
+50), therefore, in order to install the getpk tool into a working
+location on these systems, the Makefile creates the directory
+/opt/getpktools with the requisite permissions and installs the
+binaries there.
 
-If Linux users find the /opt install location unacceptable, the binaries
-can be moved to any other location in the filesystem that meets
-sshd(8)'s requirements for owner/group settings.
+This seems a sub-optimal solution given the description for /opt in
+the hier(7) manpage.  If Debian users find the /opt install location
+unacceptable, the binaries can be moved to any other location in the
+filesystem that meets sshd(8)'s requirements for owner/group settings. 
 
 
 
