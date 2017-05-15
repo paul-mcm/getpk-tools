@@ -14,5 +14,5 @@ int check_list(char *);
 int cnt_elements(const char *, const char *d);
 int comp_string(const void *, const void *);
 void parse_string(const char *, char **, const char *);
-
+int check_line(char *);
 #endif

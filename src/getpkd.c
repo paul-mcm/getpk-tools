@@ -103,7 +103,6 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		log_msg("server function returned non-zero");
-
 #ifdef DEBUG
 		if (r != 0 && r == EBUSY)
 		    log_msg("mutex ldap_lock still busy");

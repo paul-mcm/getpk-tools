@@ -14,5 +14,3 @@ void		log_ret(const char *, ...);
 void		log_syserr(const char *, ...);
 void		log_msg(const char *, ...);
 void		log_die(const char *, ...);
-void            log_ldap_quit(char *, int);
-void            log_ldap_msg(char *, int);

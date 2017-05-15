@@ -4,29 +4,53 @@ SERVER := getpkd
 CLIENT := getpk
 #DEBUGFLAGS = -D DEBUG -g
 
-ifeq ($(UNAME), OpenBSD)
-	LIBSs = /usr/local/lib
-	INCLUDES = /usr/local/include
-	OS = BSD
-	BSD_TYPE = OPENBSD
-	INSTALL_DIR = /usr/local/sbin
-	MANPATH = /usr/local/man
-	MANOWNER = root:bin
-	CCFLAGS = -D ${OS} -D ${BSD_TYPE} ${DEBUGFLAGS}
+ifeq ($(shell echo $(UNAME) | sed -E 's/(Net|Free|Open)//'), BSD) 
+	BSD_TYPE = $(UNAME)
+        OS = BSD
+        INSTALL_DIR = /usr/local/sbin
+        MANPATH = /usr/local/man
+        CCFLAGS = -D ${OS} -D ${BSD_TYPE} ${DEBUGFLAGS}
+
+	ifeq ($(BSD_TYPE), FreeBSD)
+		MANOWNER = root:wheel
+		LIBS = /usr/local/lib
+        	INCLUDES = /usr/local/include
+		BINOWNER = root:wheel
+	endif
+
+	ifeq ($(BSD_TYPE), NetBSD)
+		MANOWNER = root:wheel
+		LIBS = /usr/pkg/lib
+        	INCLUDES = /usr/pkg/include
+		BINOWNER = root:wheel
+	endif
+
+	ifeq ($(UNAME), OpenBSD)
+		LIBS = /usr/local/lib
+		INCLUDES = /usr/local/include
+		MANOWNER = root:bin
+		BINOWNER = root:bin
+	endif
 endif
+
 ifeq ($(UNAME), Linux)
-	LIBSs = /usr/lib64		# NEEDED ONLY FOR RHEL
+	LIBS = /usr/lib64
 	INCLUDES = /usr/include
 	OS = LINUX
-	LINUX_LIB = -lrt
 	MANPATH = /usr/local/share/man
 	MANOWNER = root:root
+	BINOWNER = root:root
 	CCFLAGS = -D ${OS} ${DEBUGFLAGS}
 	INSTALL_DIR = /usr/local/sbin
 
         ifneq ("$(wildcard /etc/debian_version)", "")
 	INSTALL_DIR = /opt/getpktools
         endif
+
+        ifneq ("$(wildcard /etc/devuan_version)", "")
+	INSTALL_DIR = /opt/getpktools
+        endif
+
 endif
 
 objects = config.o ldap_call.o parse_line.o uri.o errorlog.o
@@ -47,8 +71,8 @@ config.o: config.h
 	$(CC) $(CCFLAGS) -pthread -c -I${INCLUDES} config.c -o config.o
 
 all: $(objects)
-	$(CC) $(CCFLAGS) -pthread -o $(SERVER) $(objects) -I${INCLUDES} -L${LIBSs} -L/lib64 ${LINUX_LIB} -lldap -lpthread getpkd.c
-	$(CC) $(CCFLAGS) -pthread -o $(CLIENT) -I${INCLUDES} -L${LIBSs} -L/lib64 -lldap errorlog.c getpk.c
+	$(CC) $(CCFLAGS) -pthread -o $(SERVER) $(objects) -I${INCLUDES} -L${LIBS} -lldap -lpthread getpkd.c
+	$(CC) $(CCFLAGS) -pthread -o $(CLIENT) -I${INCLUDES} -L${LIBS} -lldap errorlog.c getpk.c
 	@rm -f $(objects)
 
 install:
@@ -60,8 +84,7 @@ install:
 
 ifeq ($(wildcard /etc/getpkd.conf),) 
 	@cp getpkd.conf /etc/
-endif	
-
+endif
 	@mkdir -p ${MANPATH}/man5
 	@mkdir -p ${MANPATH}/man8
 	@cp man/getpkd.8 ${MANPATH}/man8/getpkd.8
@@ -76,16 +99,11 @@ endif
 	@chown ${MANOWNER} ${MANPATH}/man8/getpk.8
 	@chown ${MANOWNER} ${MANPATH}/man8/getpkd.8
 
-ifeq (${OS}, BSD)
-	@chown root:bin ${INSTALL_DIR}/$(SERVER)
-	@chown root:bin ${INSTALL_DIR}/$(CLIENT)
+#ifeq (${OS}, BSD)
 #	@/usr/sbin/makewhatis ${MANPATH}
-
-else
-	@chown root:root ${INSTALL_DIR}/$(SERVER)
-	@chown root:root ${INSTALL_DIR}/$(CLIENT)
-
-endif
+#endif
+	@chown ${BINOWNER} ${INSTALL_DIR}/$(SERVER)
+	@chown ${BINOWNER} ${INSTALL_DIR}/$(CLIENT)
 
 clean:
 	@rm -f $(objects)

@@ -7,7 +7,8 @@ IV.	INSTALLATION & CONFIGURATION
 V.	SSHD CONFIGURATION
 VI.	LDAP CONFIGURATION
 VII.	THE sshPublicKey OBJECT CLASS
-VIII.	ADDITIONAL NOTES
+VIII.	OS SPECIFIC NOTES
+IX.	ADDITIONAL NOTES
 
 
 I. INTRO
@@ -27,27 +28,23 @@ The getpkd(8) daemon maintains state information on LDAP servers'
 availability and provides failover and failback functionality as their
 availability status changes.
 
-The getpk tools have been tested successfully on OpenBSD 5.9 & 6.0,
-Debian Linux 8.0, and Centos 7.1.  See section VIII 'ADDITIONAL NOTES'
-for OS specific idiosyncrasies. 
+The getpk tools have been tested successfully on OpenBSD 6.0 and 6.1,
+FreeBSD 11.0, Debian Linux 8.7, and Centos 7.3.  See section VIII 'OS
+SPECIFIC NOTES' for OS specific idiosyncrasies. 
 
 
 II. IMPLEMENTATION DETAILS
 ----------------------------
 
-getpkd(8) is a server daemon that listens on a local, unix domain socket
-for client requests for users' public keys.  A client request consists
-of a single username.  getpkd(8) contacts an LDAP server, searches the
-directory for the public key(s) belonging to the user's LDAP directory
-entry, and replies to the client with zero or more lines of public keys
-found as a result of the LDAP search operation.
+getpkd(8) is a server daemon that listens on the local, unix domain
+socket at /tmp/getpkd/getpkd.sock. A client request consists of a
+single username.  A server reply consists of one or more lines of
+'authorized keys' output retrieved from the LDAP directory entry for
+the given username.
 
 For public key authentication using sshd(8), public keys in the LDAP
 entry must be stored in the authorized_keys format as described in the
 section AUTHORIZED_KEYS in the sshd(8) manpage.
-
-getpkd(8) listens for client requests on the unix socket located at
-/tmp/getpkd/getpkd.sock.  
 
 The client program, getpk(8), is a simple command-line tool that can
 be used by programs that can't communicate directly with the getpkd(8)
@@ -82,16 +79,16 @@ The program `foo' is an example of an application written to talk
 directly to getpkd(8).
 
 The primary purpose of the server daemon, getpkd(8), is to obviate any
-need for layer-3 proxies (e.g., VIPs) between the client host and the
-LDAP servers.  getpkd(8) maintains state information about the
-availability of the LDAP servers it has been configured to query and
-ensures redundancy through failover/failback mechanisms when the status
-of servers' availability changes.
+need for layer-3 proxies (e.g., VIPs) between the client and the LDAP
+servers.  getpkd(8) maintains state information about the availability
+of the LDAP servers it has been configured to query and ensures
+redundancy through failover/failback mechanisms when the status of
+servers' availability changes.
 
 getpkd(8) expects public keys to be a value assigned to the `authkey'
 attribute in the user's LDAP directory entry.  The getpk tools include
 an LDAP schema that defines the sshPublicKey object class with the
-authkey attribute along with some additional, related attributes.
+authkey attribute.
 
 See the section V 'LDAP CONFIGURATION' for installing the schema on
 OpenLDAP's slapd server.  See section VII 'THE sshPublicKey OBJECT
@@ -103,6 +100,10 @@ III. REQUIREMENTS
 1.   The getpkd(8) daemon requires libldap and related libraries from the
      OpenLDAP project (http://www.openldap.org).  Your system most likely
      has a package that installs these libraries.
+
+     For Debian 8.7, if TLS functionality is desired then the OpenLDAP 
+     libraries cannot be linked to the GnuTLS library.  See section VIII 
+     'OS SPECIFIC NOTES'.
 
 2.   To compile the getpkd tools, gcc and GNU make are required.  Also,
      the header file `ldap.h' must exist.  Depending on your target system,
@@ -123,20 +124,15 @@ III. REQUIREMENTS
 
 5.   sshd(8) requires owner and group settings of root:root (or
      root:wheel) on the directory where getpk(8) is installed.  See section
-     VIII 'ADDITIONAL NOTES' for how this requirement affects installation
-     on Linux systems. 
+     VIII 'OS SPECIFIC NOTES' for how this requirement affects installation
+     on Debian systems. 
 
 
 IV. INSTALLATION & CONFIGURATION
 ----------------------------------
 
-The getpk tools have been successfully compiled on OpenBSD 5.9 and 6.0,
-Debian Linux 8.0 and Centos 7.1.  It should also compile on other
-Linux/BSD systems.
-
-On Centos systems the Makefile explicitly tells the linker where to
-find the ldap libraries.  Debian systems don't require special
-consideration. 
+The getpk tools have been successfully compiled on OpenBSD 6.0 and
+6.1, FreeBSD 11, Debian Linux 8.7 and Centos 7.3.
 
 If your system's linker is unable to find the libraries modify the
 `libs' variable in the Makefile to point to the location where the
@@ -180,13 +176,13 @@ See the getpkd.conf(5) man page for details on configuring getpkd(8).
 V. SSHD CONFIGURATION
 -----------------------
 
-sshd(8) must be configured to use getpk(8) to request public keys (see
+sshd(8) must be configured to use getpk(8) to obtain public keys (see
 sshd_config(5)).
 
-For BSDs systems, add these settings to sshd_config:
+For BSDs/RHEL systems, add these settings to sshd_config:
 
      AuthorizedKeysCommand	/usr/local/sbin/getpk
-     AuthorizedKeysUser		getpk
+     AuthorizedKeysCommandUser	getpk
 
 On Debian, the value for AuthorizedKeysCommand should be set to
 /opt/getpktools/getpk.
@@ -216,7 +212,6 @@ configure slapd to include the new object class (see slapd.conf(5)).
 See the next section for more information on the sshPublicKey object
 class. 
 
-
 VII. THE sshPublicKey OBJECT CLASS
 --------------------------------
 
@@ -228,7 +223,6 @@ fingerprint 	- fingerprint of the key
 keytype         - e.g., `ecdsa-sha2-nistp256', `ecdsa-sha2-nistp384',
                  `ecdsa-sha2-nistp521', `ssh-ed25519', `ssh-dss' or `ssh-rsa'
 keylen		- number of bits in the key
-
 
 All attributes may contain multiple values.  Note however that there is
 no inherent way for an LDAP operation to associate multiple values of
@@ -243,30 +237,42 @@ At this time, getpkd(8) only queries the LDAP server for the authkey
 attribute's values.  It is the only value required for OpenSSH public
 key authentication.
 
-VIII. ADDITIONAL NOTES
+VIII. OS SPECIFIC NOTES
 -------------------------
-1. getpkd(8) uses pthreads(3).
+OpenBSD
+-------
+The getpk tools use pledge(2) to restrict their operations.
+Therefore, they will not compile on OpenBSD releases prior to 5.9. 
 
-2. On OpenBSD, the getpk tools use pledge(2) to restrict their
-operations.  Therefore, they will not compile on OpenBSD releases
-prior to 5.9. 
+FreeBSD
+--------
+(none)
 
-3. sshd(8) requires that the program specified by the
-'AuthorizedKeysCommand' be in a directory owned by root with a group
-owner id of `0' (typically 'root' or 'wheel').
+CentOS
+-------
+(none)
 
-Debian Linux sets group ownership of this directory to 'staff' (gid
-50), therefore, in order to install the getpk tool into a working
-location on these systems, the Makefile creates the directory
-/opt/getpktools with the requisite permissions and installs the
-binaries there.
+Debian Linux
+-------------
+1.   sshd(8) requires that the program specified by the 
+     'AuthorizedKeysCommand' be in a directory owned by root with a group
+      owner id of `0' (typically 'root' or 'wheel').
 
-This seems a sub-optimal solution given the description for /opt in
-the hier(7) manpage.  If Debian users find the /opt install location
-unacceptable, the binaries can be moved to any other location in the
-filesystem that meets sshd(8)'s requirements for owner/group settings. 
+     Debian Linux sets group ownership of /usr/local/sbin to 'staff' 
+     (gid 50), therefore, in order to install the getpk tool into a 
+     working location on these systems, the Makefile creates the directory
+     /opt/getpktools with the requisite permissions and installs the
+     binaries there.  The binaries may be moved to any other location in
+     the filesystem that meets sshd(8)'s requirements for owner/group
+     settings.
 
+2.   The OpenLDAP libraries packaged for Debian are linked with the GnuTLS 
+     library for TLS operations.  The version of this library installed 
+     on Debian 8.7 (and earlier verions?) has initialization functions 
+     that break some security features and cause getpkd to fail when 
+     configured to use TLS.
 
-
-
-
+     To use TLS with getpkd, rebuild the LDAP libraries, configuring support
+     for TLS using some other library (libssl has been tested successfully).
+     By default, the Makefile expects to find the LDAP libraries in 
+     /usr/local/lib

@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
 	if ((n_written = write(sockfd, argv[1], strlen(argv[1]) + 1)) < 0)
 	    log_syserr("Error writing to %s: %s\n", sock, strerror(errno));
 
+
 	while ((n_read = read(sockfd, key, 1024)) > 0)
 	    if (write(STDOUT_FILENO, key, n_read) < 0)
 		log_syserr("Write error: %d %s", errno, strerror(errno));

@@ -123,5 +123,5 @@ int	do_search_failure(struct thread_args *);
 int	do_result_failure(struct thread_args *);
 int	intitializ(LDAP *, struct configuration *);
 int	uristr_calloc(char *, int);
-
+int	initialize(LDAP **, struct configuration *);
 #endif

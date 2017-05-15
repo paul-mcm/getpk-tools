@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "parse_line.h"
 #include "uri.h"
@@ -44,4 +45,7 @@ char	*cat_strings(char *, const char *);
 void	set_cfg_defaults(struct configuration *);
 int	validate_config(struct configuration *);
 void	free_ignore_list(struct configuration *);
+void	free_config(struct configuration *);
+int	build_config(struct configuration *c);
+
 #endif

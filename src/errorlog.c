@@ -82,13 +82,3 @@ static void log_doit(int errnoflag, int priority, const char *fmt, va_list ap)
 
 	return;
 }
-
-void log_ldap_quit(char *s, int n) {
-        syslog(LOG_ERR, "fatal ldap error: %s %d - %s\n", n, \
-            ldap_err2string(n));
-        exit(-1);
-}
-
-void log_ldap_msg(char *s, int n) {
-        syslog(LOG_ERR, "ldap error: %s %d\n", s, n, ldap_err2string(n));
-}

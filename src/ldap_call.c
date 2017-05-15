@@ -1,3 +1,7 @@
+#ifdef FreeBSD
+#define _WITH_DPRINTF
+#endif
+
 #include "ldap_call.h"
 
 int init_ldap_handle(LDAP **l, struct configuration *c, char *uri)
@@ -179,4 +183,14 @@ void free_lobj(void *l)
 	    if ((r = ldap_destroy((LDAP *)l)) != LDAP_SUCCESS)
 		log_msg("ERROR: failed to destroy LDAP handle: %s", \
 		    ldap_err2string(r));
+}
+
+void log_ldap_quit(char *s, int n) {
+        syslog(LOG_ERR, "fatal ldap error: %s %d - %s\n", n, \
+            ldap_err2string(n));
+        exit(-1);
+}
+
+void log_ldap_msg(char *s, int n) {
+        syslog(LOG_ERR, "ldap error: %s %d\n", s, n, ldap_err2string(n));
 }
