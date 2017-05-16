@@ -2,6 +2,7 @@
 #include <sys/un.h>
 
 #include <errno.h>
+#include <signal.h>
 #include <syslog.h>
 #include <unistd.h>
 
@@ -9,6 +10,8 @@
 
 #define SA struct sockaddr
 
+void sigpipe_handler();
+int sigpipe;
 int debug = 0;
 
 int main(int argc, char *argv[])
@@ -18,6 +21,10 @@ int main(int argc, char *argv[])
 	struct sockaddr_un	servaddr;
 	char			key[2048];
 	ssize_t			n_read, n_written;
+
+	sigpipe = 0;
+	if (signal(SIGPIPE, sigpipe_handler) == SIG_ERR)
+	    log_syserr("Failed to set SIGTERM handler:", errno);
 
 #ifdef OPENBSD
 	if (pledge("stdio unix", NULL) == -1)
@@ -43,13 +50,24 @@ int main(int argc, char *argv[])
 	if ((n_written = write(sockfd, argv[1], strlen(argv[1]) + 1)) < 0)
 	    log_syserr("Error writing to %s: %s\n", sock, strerror(errno));
 
-
-	while ((n_read = read(sockfd, key, 1024)) > 0)
-	    if (write(STDOUT_FILENO, key, n_read) < 0)
-		log_syserr("Write error: %d %s", errno, strerror(errno));
+	while ((n_read = read(sockfd, key, 1024)) > 0) {
+	    if (write(STDOUT_FILENO, key, n_read) < 0) {
+		if (sigpipe == 1) {
+		    log_ret("Output descriptor closed: Recv'd SIGPIPE");
+		    exit(0);
+		} else {
+		    log_syserr("Write error: %d %s", errno, strerror(errno));
+		}
+	    }
+	}
 
 	if (n_read < 0)
 	    log_syserr("Error reading response from server to %s\n", sock, strerror(errno));
 	
 	exit(0);	    
+}
+
+void sigpipe_handler(void)
+{	
+	sigpipe = 1;
 }
