@@ -8,25 +8,28 @@ V.	SSHD CONFIGURATION
 VI.	LDAP CONFIGURATION
 VII.	THE sshPublicKey OBJECT CLASS
 VIII.	OS SPECIFIC NOTES
-IX.	ADDITIONAL NOTES
-
 
 I. INTRO
 ---------
 
-Since the release of OpenSSH 6.2, the sshd(8) server can be configured
-to execute a program to obtain a user's public key for public key
-authentication (see the AuthorizedKeysCommand and AuthorizedKeysUser
-keywords in sshd_config(5)). 
+Using the AuthorizedKeysCommand configuration keyword, sshd can be
+configured to requests users' public keys from external programs run
+on the local host for public-key authentication (see sshd_config(5)).
 
 The getpk tools, getpk(8) and getpkd(8), are a pair of small
-client/server utilities that work together to serve requests from
-sshd(8) (or other programs) for public keys stored in an LDAP
+client/server utilities that run on the local host to serve requests
+from sshd(8) (or other programs) for public keys stored in an LDAP
 directory entry.
 
-The getpkd(8) daemon maintains state information on LDAP servers'
-availability and provides failover and failback functionality as their
-availability status changes.
+The primary design requirement was to maintain state information on
+the LDAP servers' availability, obviating any dependencies on layer-3
+proxies (e.g. VIPs) between clients running sshd(8) and clusters of
+redundant of LDAP servers.
+
+Similarly to other common authentication management tools (nslcd,
+saslauthd, sssd) the getpkd(8) daemon can be configured with a list of
+LDAP servers, and it provides failover and failback functionality as
+their availability status changes.
 
 The getpk tools have been tested successfully on OpenBSD 6.0 and 6.1,
 FreeBSD 11.0, Debian Linux 8.7, and Centos 7.3.  See section VIII 'OS
@@ -37,7 +40,7 @@ II. IMPLEMENTATION DETAILS
 ----------------------------
 
 getpkd(8) is a server daemon that listens on the local, unix domain
-socket at /tmp/getpkd/getpkd.sock. A client request consists of a
+socket at /tmp/getpkd/getpkd.sock.  A client request consists of a
 single username.  A server reply consists of one or more lines of
 'authorized keys' output retrieved from the LDAP directory entry for
 the given username.
@@ -90,7 +93,7 @@ attribute in the user's LDAP directory entry.  The getpk tools include
 an LDAP schema that defines the sshPublicKey object class with the
 authkey attribute.
 
-See the section V 'LDAP CONFIGURATION' for installing the schema on
+See the section VI 'LDAP CONFIGURATION' for installing the schema on
 OpenLDAP's slapd server.  See section VII 'THE sshPublicKey OBJECT
 CLASS' for additional details.
 
@@ -120,7 +123,7 @@ III. REQUIREMENTS
 4.   Public keys in the LDAP directory must be assigned to the
      `authkey' attribute.  Use the included sshPublicKey.schema or write a
      schema definition that defines an object class with this attribute
-     name.  See the section V 'LDAP CONFIGURATION'.
+     name.  See the section VI 'LDAP CONFIGURATION'.
 
 5.   sshd(8) requires owner and group settings of root:root (or
      root:wheel) on the directory where getpk(8) is installed.  See section
